@@ -1,3 +1,4 @@
+-- Drop existing tables if they exist
 DROP TABLE IF EXISTS BagItem;
 DROP TABLE IF EXISTS PaperItemWarehouse;
 DROP TABLE IF EXISTS Machine;
@@ -11,6 +12,7 @@ DROP TABLE IF EXISTS BagType;
 DROP TABLE IF EXISTS Orders;
 DROP TABLE IF EXISTS Client;
 
+-- Create tables with improvements
 CREATE TABLE Client 
 (
     idClient INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,8 +26,8 @@ CREATE TABLE Orders
 (
     idOrder INTEGER PRIMARY KEY AUTOINCREMENT,
     date DATE NOT NULL,
-    status VARCHAR(255),
-    deliveryMethod VARCHAR(255),
+    status VARCHAR(255) CHECK (status IN ('Processing', 'Shipped', 'Delivered')),
+    deliveryMethod VARCHAR(255) CHECK (deliveryMethod IN ('Standard', 'Express', 'Priority')),
     price DECIMAL(10,2) NOT NULL CHECK (price > 0),
     idClient INTEGER NOT NULL,
     FOREIGN KEY (idClient) REFERENCES Client(idClient) ON DELETE CASCADE
@@ -36,8 +38,8 @@ CREATE TABLE BagType
     idBagType INTEGER PRIMARY KEY AUTOINCREMENT,
     dimensions VARCHAR(255) NOT NULL,
     description VARCHAR(255),
-    unitPrice DECIMAL(1,2) NOT NULL,
-    state VARCHAR(255),
+    unitPrice DECIMAL(1,2) NOT NULL CHECK (unitPrice > 0),
+    state VARCHAR(255) CHECK (state IN ('Available', 'Out of Stock', 'Discontinued')),
     designation VARCHAR(255),
     idPaper INTEGER NOT NULL,
     FOREIGN KEY (idPaper) REFERENCES Paper(idPaper)
@@ -97,7 +99,7 @@ CREATE TABLE Machine
     idMachine INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(255),
     model VARCHAR(255),
-    warranty BOOLEAN,
+    warranty BOOLEAN CHECK (warranty IN (0, 1)),
     idWarehouse INTEGER NOT NULL,
     FOREIGN KEY (idWarehouse) REFERENCES Warehouse(idWarehouse)
 );
@@ -106,7 +108,7 @@ CREATE TABLE PaperItemWarehouse
 (
     idPaperItem INTEGER NOT NULL,
     idWarehouse INTEGER NOT NULL,
-    PRIMARY KEY (idPaperItem),
+    PRIMARY KEY (idPaperItem, idWarehouse),
     FOREIGN KEY (idPaperItem) REFERENCES PaperItem(idPaperItem),
     FOREIGN KEY (idWarehouse) REFERENCES Warehouse(idWarehouse)
 );
